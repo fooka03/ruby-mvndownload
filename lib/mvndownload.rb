@@ -41,16 +41,17 @@ class Mvndownload
             req.basic_auth(user, pass)
         end
         begin
-            Net::HTTP.new(uri.host, uri.port, p_addr, p_port, p_user, p_pass).start do |http|
-                http.use_ssl = uri.scheme == 'https'
+            h = Net::HTTP.new(uri.host, uri.port, p_addr, p_port, p_user, p_pass)
+            h.use_ssl = uri.scheme == 'https'
+            h.start do |http|
                 http.request req do |response|
                     parent = File.dirname dest
                     stat = Sys::Filesystem.stat(parent)
                     bytes_available = stat.block_size * stat.blocks_available
                     
                     if ( response.content_length() != nil )
-                    	if ((response['content-length'].to_i *2) >  bytes_available)
-                       		raise RuntimeError,"Not enough disk space to download the file to " + parent
+                        if ((response['content-length'].to_i *2) >  bytes_available)
+                            raise RuntimeError,"Not enough disk space to download the file to " + parent
                         end
                     end
                     
